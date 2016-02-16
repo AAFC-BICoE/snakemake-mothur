@@ -1,0 +1,6 @@
+{
+  "workdir": "data",
+  "maxambig": 0,
+  "maxlength": 275,
+  "pcr_seqs": "silva.bacteria.fasta",
+}
