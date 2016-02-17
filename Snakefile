@@ -1,7 +1,8 @@
 ''' Snakemake implementation of the mothur MiSeq SOP available at
     http://www.mothur.org/wiki/MiSeq_SOP#Getting_started
 
-threads = min(threads, cores) with cores being the number of cores specified at the command line (option --cores). On a cluster node, Snakemake always uses as many cores as available on that node. Hence, the number of threads used by a rule never exceeds the number of physically available cores on the node.
+     © Copyright Government of Canada 2009-2016
+     Written by: Tom Sitter, for Agriculture and Agri-Food Canada
 '''
 
 configfile: "config.json"
@@ -18,8 +19,6 @@ workdir can be changed by passing in a different workdir
 snakemake --config workdir="data/miseq/"
 '''
 
-
-
 '''Python helper functions'''
 def get_start_end_from_summary(filename):
     with open(filename) as f:
@@ -33,6 +32,9 @@ rule all:
     input:
         "{dataset}.trim.contigs.good.fasta".format(dataset=dataset)
 
+'''  
+threads = min(threads, cores) with cores being the number of cores specified at the command line (option --cores). On a cluster node, Snakemake always uses as many cores as available on that node. Hence, the number of threads used by a rule never exceeds the number of physically available cores on the node.
+'''
 rule make_contigs:
     version: "0.1"
     input:
@@ -45,7 +47,7 @@ rule make_contigs:
         '''
         mothur "#make.contigs(file={input}, processors={threads})"
         '''
-               
+
 '''
 Full output from make_contigs:
 stability.trim.contigs.qual
