@@ -3,4 +3,13 @@
   "maxambig": 0,
   "maxlength": 275,
   "pcr_seqs": "silva.bacteria.fasta",
+  "start": 11894,
+  "end": 25319,
+  "keepdots": "F",
+  "reference": "silva.bacteria/silva.bacteria.fasta",
+  "pcr": "silva.bacteria/silva.bacteria.pcr.fasta",
+  "vertical": "T",
+  "trump": ".",
+  "diff": 2,
+  "dereplicate": "t",
 }
