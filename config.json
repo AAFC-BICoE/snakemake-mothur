@@ -1,8 +1,7 @@
 {
   "workdir": "data",
   
-  "reference": "silva.bacteria.fasta",
-  "pcr": "silva.bacteria.pcr.fasta",
+  "reference": "silva.bacteria",
   "trainset": "trainset9_032012.pds.fasta",
   "taxonomy": "trainset9_032012.pds.tax",
   

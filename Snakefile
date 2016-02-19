@@ -40,9 +40,9 @@ include: 'preprocess.mothur.Snakefile'
 rule pcr:
     version:"1.36.1"
     input:
-        fasta = config['reference']
+        fasta = config['reference'] + ".fasta"
     output:
-        "silva.bacteria.pcr.fasta"
+        config["reference"]+ ".pcr.fasta"
     threads: 8
     shell:
         '''
@@ -77,7 +77,7 @@ rule align:
     version:"1.36.1"
     input:
         fasta = "{dataset}.trim.contigs.good.unique.fasta".format(dataset=dataset),
-        ref = "silva.bacteria.pcr.fasta"
+        ref = config["reference"] + ".pcr.fasta"
     output:
         "{dataset}.trim.contigs.good.unique.align".format(dataset=dataset)
     shell:
