@@ -14,3 +14,6 @@ More up-to-date URLs may be available at the MiSeq SOP link above if these do no
 All files should be placed in the data/ folder of this repository. 
 Make sure the silva.bacteria and Trainset files are in data/ and not in a subdirectory or mothur will not be able to find them!
 
+Here is an image of the current workflow implemented in the Snakefile. This image was generated using snakemake.
+
+![muthur workflow](dag.final.png?raw=true "Mothur Workflow")
