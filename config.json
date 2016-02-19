@@ -1,14 +1,29 @@
 {
   "workdir": "data",
-  "maxambig": 0,
-  "maxlength": 275,
-  "start": 11894,
-  "end": 25319,
-  "keepdots": "F",
+  
   "reference": "silva.bacteria.fasta",
   "pcr": "silva.bacteria.pcr.fasta",
+  "trainset": "trainset9_032012.pds.fasta",
+  "taxonomy": "trainset9_032012.pds.tax",
+  
+  "maxambig": 0,
+  "maxlength": 275,
+  
+  "start": 11894,
+  "end": 25319,
+  
+  "maxhomop": 8,
+
+  "keepdots": "F",
+
   "vertical": "T",
   "trump": ".",
+  
   "diff": 2,
+  
   "dereplicate": "t",
+
+  "cutoff": 80,
+
+  "taxon": "Chloroplast-Mitochondria-unknown-Archaea-Eukaryota"
 }
