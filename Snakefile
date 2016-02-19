@@ -33,8 +33,8 @@ rule all:
 
 
 # Import Preprocessor
-# include: 'preprocess.mothur.Snakefile'
-include: 'preprocess.trimmomatic.Snakefile'
+include: 'preprocess.mothur.Snakefile'
+# include: 'preprocess.trimmomatic.Snakefile'
 
 
 rule pcr:

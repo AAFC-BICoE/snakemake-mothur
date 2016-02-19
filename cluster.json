@@ -1,12 +1,13 @@
-{
-    "__default__":
-    {
-        "walltime": "04:00:00",
-        "mem": "2GB",
-
-    },
-    "make_config":
-    {
-        "walltime": "00:02:00"
-    }
-}
+#cluster.json  
+{  
+    "__default__":  
+    {  
+        "walltime": "04:00:00",  
+        "mem": "2GB",  
+  
+    },  
+    "make_config":  
+    {  
+        "walltime": "00:02:00"  
+    }  
+}  

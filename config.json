@@ -11,10 +11,10 @@
   
   "start": 11894,
   "end": 25319,
+  "keepdots": "F",
   
   "maxhomop": 8,
 
-  "keepdots": "F",
 
   "vertical": "T",
   "trump": ".",
