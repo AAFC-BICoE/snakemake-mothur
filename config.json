@@ -24,5 +24,8 @@
 
   "cutoff": 80,
 
-  "taxon": "Chloroplast-Mitochondria-unknown-Archaea-Eukaryota"
+  "taxon": "Chloroplast-Mitochondria-unknown-Archaea-Eukaryota",
+
+  "group": "Mock",
+  "dist_cutoff": 0.20,
 }

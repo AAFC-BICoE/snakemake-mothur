@@ -42,7 +42,7 @@ rule pcr:
     input:
         fasta = config['reference'] + ".fasta"
     output:
-        config["reference"]+ ".pcr.fasta"
+        config["reference"] + ".pcr.fasta"
     threads: 8
     shell:
         '''
@@ -205,4 +205,36 @@ rule remove_lineage:
     shell:
         '''
         mothur "#remove.lineage(fasta={input.fasta}, count={input.count}, taxonomy={input.tax}, taxon={config[taxon]})" > {log}
+        '''
+
+# Preparing for analysis (traditional method)
+rule prepare_analysis:
+    input:
+        count = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.pick.count_table".format(dataset=dataset),
+        fasta = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta".format(dataset=dataset),
+        taxonomy = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy".format(dataset=dataset),
+    output:
+        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.taxonomy".format(dataset=dataset),
+        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.pick.pick.count_table".format(dataset=dataset),
+    shell:
+        '''
+        mothur "#remove.groups(count={input.count}, fasta={input.fasta}, taxonomy={input.taxonomy}, groups={config[mock]});
+                dist.seqs(fasta=current, cutoff={config[dist_cutoff]});
+                cluster(column=current, count=current);
+                make.shared(list=current, count=current, label=0.03);
+                classify.otu(list=current, count=current, taxonomy=current, label=0.03);"
+        '''
+
+# Analysis
+rule analysis:
+    input:
+        taxonomy = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.taxonomy".format(dataset=dataset),
+        count = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.pick.pick.count_table".format(dataset=dataset),
+    output:
+        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.tx.1.cons.taxonomy".format(dataset=dataset),
+    shell:
+        '''
+        mothur "#phylotype(taxonomy={input.taxonomy});
+                make.shared(list=current, count={input.count}, label=1);
+                classify.otu(list=current, count={input.count}. taxonomy={input.taxonomy}, label=1);"
         '''
