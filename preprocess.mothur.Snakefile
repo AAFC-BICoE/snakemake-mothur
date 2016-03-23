@@ -5,7 +5,7 @@ Preprocess results using mothur
 rule make_contigs:
     version: "1.36.1"
     input:
-        "{dataset}.files".format(dataset=dataset),
+        "MiSeq_SOP/{dataset}.files".format(dataset=dataset),
     output:
         "{dataset}.trim.contigs.fasta".format(dataset=dataset),
         "{dataset}.contigs.groups".format(dataset=dataset),

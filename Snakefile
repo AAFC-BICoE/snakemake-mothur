@@ -6,7 +6,7 @@
 '''
 
 configfile: "config.json"
-dataset = 'stability'
+dataset = config["dataset"]
 
 '''
 workdir can be changed by passing in a different workdir 
@@ -22,6 +22,7 @@ def get_start_end_from_summary(wildcards):
             if line.startswith("Median"):
                 _, start, end, *extra = line.split('\t')
                 return (start, end)
+    return 0, 0
 
 '''
 Snakemake Rules
@@ -40,7 +41,7 @@ include: 'preprocess.mothur.Snakefile'
 rule pcr:
     version:"1.36.1"
     input:
-        fasta = config['reference'] + ".fasta"
+        fasta = config["reference"] + ".fasta"
     output:
         config["reference"] + ".pcr.fasta"
     threads: 8
