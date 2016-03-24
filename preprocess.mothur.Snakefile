@@ -5,11 +5,11 @@ Preprocess results using mothur
 rule make_contigs:
     version: "1.36.1"
     input:
-        "MiSeq_SOP/{dataset}.files".format(dataset=dataset),
+        "{dataset}.files".format(dataset=dataset),
     output:
         "{dataset}.trim.contigs.fasta".format(dataset=dataset),
         "{dataset}.contigs.groups".format(dataset=dataset),
-    threads: 1
+    threads: 8
     shell: 
         '''
         mothur "#make.contigs(file={input}, processors={threads})"

@@ -4,6 +4,9 @@
     © Copyright Government of Canada 2009-2016
     Written by: Tom Sitter, for Agriculture and Agri-Food Canada
 '''
+import os
+from collections import namedtuple
+Summary = namedtuple('Summary', ['start', 'end'])
 
 configfile: "config.json"
 dataset = config["dataset"]
@@ -15,28 +18,27 @@ snakemake --config workdir="data/miseq/"
 workdir: config["workdir"]
 
 '''Python helper functions'''
-def get_start_end_from_summary(wildcards):
+def parse_summary(wildcards):
     filename = "{dataset}.summary.txt".format(dataset=dataset)
-    with open(filename) as f:
-        for line in f:
-            if line.startswith("Median"):
-                _, start, end, *extra = line.split('\t')
-                return (start, end)
-    return 0, 0
+    if os.path.isfile(filename):
+        with open(filename) as f:
+            for line in f:
+                if line.startswith("Median"):
+                    _, start, end, *extra = line.split('\t')
+                    return Summary(start=start, end=end)
+    return Summary(start=0, end=0)
 
 '''
 Snakemake Rules
 '''
 
-rule all:
-    input:
-        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta".format(dataset=dataset),
-
-
 # Import Preprocessor
 include: 'preprocess.mothur.Snakefile'
 # include: 'preprocess.trimmomatic.Snakefile'
 
+rule all:
+    input:
+        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.tx.1.cons.taxonomy".format(dataset=dataset)
 
 rule pcr:
     version:"1.36.1"
@@ -105,15 +107,15 @@ rule screen2:
         fasta = "{dataset}.trim.contigs.good.unique.align".format(dataset=dataset),
         count = "{dataset}.trim.contigs.good.count_table".format(dataset=dataset),
         summary = "{dataset}.trim.contigs.good.unique.summary".format(dataset=dataset),
-    params:
-        start_end = get_start_end_from_summary
     output:
         "{dataset}.trim.contigs.good.unique.good.align".format(dataset=dataset),
         "{dataset}.trim.contigs.good.good.count_table".format(dataset=dataset),
-    shell:
-        '''
-        mothur "#screen.seqs(fasta={input.fasta},count={input.count},summary={input.summary},start={params.start_end[0]},end={params.start_end[1]},maxhomop={config[maxhomop]})"
-        '''
+    run:
+        summary = parse_summary(input.summary)
+        cmd = "mothur \"#screen.seqs(fasta={},count={},summary={},start={},end={},maxhomop={})\"".format(
+               input.fasta, input.count, input.summary, summary.start, summary.end, config["maxhomop"])
+        os.system(cmd)
+        
 
 rule filter:
     version: "1.36.1"
@@ -160,8 +162,8 @@ rule chimera_uchime:
         fasta="{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.fasta".format(dataset=dataset),
         count="{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.count_table".format(dataset=dataset)
     output:
-        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.accnos".format(dataset=dataset),
-        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.count_table".format(dataset=dataset),
+        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.uchime.accnos".format(dataset=dataset),
+        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table".format(dataset=dataset),
     shell:
         '''
         mothur "#chimera.uchime(fasta={input.fasta}, count={input.count}, dereplicate={config[dereplicate]})"
@@ -171,7 +173,7 @@ rule remove:
     version: "1.36.1"
     input:
         fasta = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.fasta".format(dataset=dataset),
-        accnos = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.accnos".format(dataset=dataset),
+        accnos = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.uchime.accnos".format(dataset=dataset),
     output:
         "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta".format(dataset=dataset)
     shell:
@@ -183,7 +185,7 @@ rule classify:
     version: "1.36.1"
     input:
         fasta = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta".format(dataset=dataset),
-        count = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.count_table".format(dataset=dataset),
+        count = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table".format(dataset=dataset),
         ref = config["trainset"],
         tax = config["taxonomy"]
     output:
@@ -197,29 +199,33 @@ rule remove_lineage:
     version: "1.36.1"
     input:
         fasta = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta".format(dataset=dataset),
-        count = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.count_table".format(dataset=dataset),
+        count = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table".format(dataset=dataset),
         tax = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.taxonomy".format(dataset=dataset)
     output:
+        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy".format(dataset=dataset),
         "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta".format(dataset=dataset),
+        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.count_table".format(dataset=dataset)
+
     log:
         "logs/remove_lineage/{dataset}.log".format(dataset=dataset)
     shell:
         '''
-        mothur "#remove.lineage(fasta={input.fasta}, count={input.count}, taxonomy={input.tax}, taxon={config[taxon]})" > {log}
+        /opt/bio/mothur/mothur "#remove.lineage(fasta={input.fasta}, count={input.count}, taxonomy={input.tax}, taxon={config[taxon]})"
+	#touch "stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta"
         '''
 
 # Preparing for analysis (traditional method)
 rule prepare_analysis:
     input:
-        count = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.pick.count_table".format(dataset=dataset),
+        count = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.count_table".format(dataset=dataset),
         fasta = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta".format(dataset=dataset),
         taxonomy = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy".format(dataset=dataset),
     output:
         "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.taxonomy".format(dataset=dataset),
-        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.pick.pick.count_table".format(dataset=dataset),
+        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.pick.count_table".format(dataset=dataset),
     shell:
         '''
-        mothur "#remove.groups(count={input.count}, fasta={input.fasta}, taxonomy={input.taxonomy}, groups={config[mock]});
+        mothur "#remove.groups(count={input.count}, fasta={input.fasta}, taxonomy={input.taxonomy}, groups={config[group]});
                 dist.seqs(fasta=current, cutoff={config[dist_cutoff]});
                 cluster(column=current, count=current);
                 make.shared(list=current, count=current, label=0.03);
@@ -230,12 +236,12 @@ rule prepare_analysis:
 rule analysis:
     input:
         taxonomy = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.taxonomy".format(dataset=dataset),
-        count = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.pick.pick.count_table".format(dataset=dataset),
+        count = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.pick.count_table".format(dataset=dataset),
     output:
         "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.tx.1.cons.taxonomy".format(dataset=dataset),
     shell:
         '''
         mothur "#phylotype(taxonomy={input.taxonomy});
                 make.shared(list=current, count={input.count}, label=1);
-                classify.otu(list=current, count={input.count}. taxonomy={input.taxonomy}, label=1);"
+                classify.otu(list=current, count={input.count}, taxonomy={input.taxonomy}, label=1);"
         '''
