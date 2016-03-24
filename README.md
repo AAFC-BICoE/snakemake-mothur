@@ -8,7 +8,8 @@ Please see http://www.mothur.org/wiki/MiSeq_SOP
   * [Requirements](#reqs)
   * [Installation/Setup](#install)
   * [Running](#running)
-  * [Additional Configuration](#config)
+  * [Additional Information](#info)
+  * [See also](#seealso)
   
  
 ## <a name="workflow"></a>Workflow
@@ -209,7 +210,7 @@ job-ID  prior   name       user         state submit/start at     queue         
  177229 0.00000 snakejob.p bctraining03 qw    03/23/2016 15:06:23                                    8        
 ```
 
-# <a name="config"></a>Additional Configuration
+# <a name="info"></a>Additional Information
 
 __Specifying Queue__
 
@@ -225,4 +226,80 @@ rule example_rule:
 
 `> snakemake -j --drmaa ' -q {params.queue} -b n -S /bin/bash'`
 
+__Parsing Intermediate Results__
 
+Instead of shell commands, you can run a python script. I used this in one example to parse a file from the previous rule and pass the contents into the following rule.
+
+```python
+import os
+from collections import namedtuple 
+
+Summary = namedtuple('Summary', ['start', 'end'])
+
+def parse_summary(wildcards):
+    filename = "{dataset}.summary.txt".format(dataset=dataset)
+    if os.path.isfile(filename):
+        with open(filename) as f:
+            for line in f:
+                if line.startswith("Median"):
+                    _, start, end, *extra = line.split('\t')
+                    return Summary(start=start, end=end)
+    return Summary(start=0, end=0)
+
+rule screen2:
+    version: "1.36.1"
+    input:
+        fasta = "{dataset}.trim.contigs.good.unique.align".format(dataset=dataset),
+        count = "{dataset}.trim.contigs.good.count_table".format(dataset=dataset),
+        summary = "{dataset}.trim.contigs.good.unique.summary".format(dataset=dataset),
+    output:
+        "{dataset}.trim.contigs.good.unique.good.align".format(dataset=dataset),
+        "{dataset}.trim.contigs.good.good.count_table".format(dataset=dataset),
+    run:
+        summary = parse_summary(input.summary)
+        cmd = "mothur \"#screen.seqs(fasta={},count={},summary={},start={},end={},maxhomop={})\"".format(
+               input.fasta, input.count, input.summary, summary.start, summary.end, config["maxhomop"])
+        os.system(cmd)
+```
+
+__Creating Workflow Diagrams__
+
+To automatically generate an image like the one at the top of this file, you can run:
+
+`> snakemake --dag | dot -Tpdf > dag.pdf`
+
+__Things to look into I didn't have time for__
+
+There are a number of snakemake command line flags that aren't adequately documented but may be very useful. They are:
+
+```
+--resources [NAME=INT [NAME=INT ...]], --res [NAME=INT [NAME=INT ...]]
+                        Define additional resources that shall constrain the
+                        scheduling analogously to threads (see above). A
+                        resource is defined as a name and an integer value.
+                        E.g. --resources gpu=1. Rules can use resources by
+                        defining the resource keyword, e.g. resources: gpu=1.
+                        If now two rules require 1 of the resource 'gpu' they
+                        won't be run in parallel by the scheduler.
+                        
+--immediate-submit, --is
+                        Immediately submit all jobs to the cluster instead of
+                        waiting for present input files. This will fail,
+                        unless you make the cluster aware of job dependencies,
+                        e.g. via: $ snakemake --cluster 'sbatch --dependency
+                        {dependencies}. Assuming that your submit script (here
+                        sbatch) outputs the generated job id to the first
+                        stdout line, {dependencies} will be filled with space
+                        separated job ids this job depends on.
+--jobscript SCRIPT, --js SCRIPT
+                        Provide a custom job script for submission to the
+                        cluster. The default script resides as 'jobscript.sh'
+                        in the installation directory.
+```
+
+# <a name="seealso"></a>See Also
+
+* [Snakemake Homepage](https://bitbucket.org/snakemake/snakemake/wiki/Home)
+* [Snakemake Tutorial](http://snakemake.bitbucket.org/snakemake-tutorial.html)
+* [Snakemake documentation](https://bitbucket.org/snakemake/snakemake/wiki/Documentation)
+* [Snakemake Google Group](https://groups.google.com/forum/#!forum/snakemake)
