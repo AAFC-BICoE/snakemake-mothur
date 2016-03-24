@@ -210,7 +210,11 @@ job-ID  prior   name       user         state submit/start at     queue         
  177229 0.00000 snakejob.p bctraining03 qw    03/23/2016 15:06:23                                    8        
 ```
 
-# <a name="info"></a>Additional Information
+### Cluster Configuration
+
+Snakemake allows you to create a JSON configuration file for running files on a cluster. See the [documentation for cluster configuration](https://bitbucket.org/snakemake/snakemake/wiki/Documentation#markdown-header-cluster-configuration)
+
+## <a name="info"></a>Additional Information
 
 __Specifying Queue__
 
