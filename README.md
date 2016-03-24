@@ -159,7 +159,7 @@ This gives me the following files
 
 ## <a name="running"></a>Running
 
-Please read the [official tutorial and documentation](https://bitbucket.org/snakemake/snakemake/wiki/Home)
+Please read the [official snakemake tutorial and documentation](https://bitbucket.org/snakemake/snakemake/wiki/Home)
 
 This guide assumes you have read them.
 
@@ -219,7 +219,7 @@ You can also specify which queue each job should run in in the snakemake rule. T
 rule example_rule:
   input: somefile.fasta
   output: someotherfile.result
-  params: queue=gpu
+  params: queue=all.q
   shell: "cmd {input} > {output}"
 ```
 
