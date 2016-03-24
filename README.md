@@ -3,18 +3,28 @@
 Example of a snakemake workflow implementation of the mothur MiSeq SOP.
 Please see http://www.mothur.org/wiki/MiSeq_SOP
 
+## Table of Contents
+  * [Workflow](#workflow)
+  * [Requirements](#reqs)
+  * [Installation/Setup](#install)
+  * [Running](#running)
+  * [Additional Configuration](#config)
+  
+ 
+## <a name="workflow"></a>Workflow
+
 Here is an image of the current workflow implemented in the Snakefile. This image was generated using snakemake.
 
 ![mothur workflow](dag.final.png?raw=true "Mothur Workflow")
 
-## Requirements
+## <a name="reqs"></a>Requirements
 
 - Python 3.3+
 - snakemake 3.5+
 
 I used Python 3.5.1 and Snakemake 3.6.0
 
-## Install Instructions
+## <a name="install"></a>Install Instructions
 
 Install Python and snakemake with sudo priviledges
 ```
@@ -147,7 +157,7 @@ This gives me the following files
 └── Snakefile
 ```
 
-## Running
+## <a name="running"></a>Running
 
 Please read the [official tutorial and documentation](https://bitbucket.org/snakemake/snakemake/wiki/Home)
 
@@ -199,7 +209,7 @@ job-ID  prior   name       user         state submit/start at     queue         
  177229 0.00000 snakejob.p bctraining03 qw    03/23/2016 15:06:23                                    8        
 ```
 
-# Additional Configuration
+# <a name="config"></a>Additional Configuration
 
 __Specifying Queue__
 
