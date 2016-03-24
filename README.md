@@ -10,7 +10,7 @@ Please see http://www.mothur.org/wiki/MiSeq_SOP
   * [Running](#running)
   * [Additional Information](#info)
   * [See also](#seealso)
-  
+  * [Caveats](#caveats)
  
 ## <a name="workflow"></a>Workflow
 
@@ -307,3 +307,12 @@ There are a number of snakemake command line flags that aren't adequately docume
 * [Snakemake Tutorial](http://snakemake.bitbucket.org/snakemake-tutorial.html)
 * [Snakemake documentation](https://bitbucket.org/snakemake/snakemake/wiki/Documentation)
 * [Snakemake Google Group](https://groups.google.com/forum/#!forum/snakemake)
+
+
+# <a name="caveats"></a>Caveats
+
+This repo demonstrates a very minimal amount of the language and features of snakemake.
+
+One large omittance is how you can specify filenames for input into the pipeline. Please see the tutorial and documentation for various other (more powerful and flexible) methods for this.
+
+There are also many more directives that can help you track rules and specify how they work (e.g. logging, benchmarking, resource usage)
