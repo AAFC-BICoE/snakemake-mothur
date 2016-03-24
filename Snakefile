@@ -38,7 +38,7 @@ include: 'preprocess.mothur.Snakefile'
 
 rule all:
     input:
-        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.tx.1.cons.taxonomy".format(dataset=dataset)
+        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.cons.taxonomy".format(dataset=dataset)
 
 rule pcr:
     version:"1.36.1"
@@ -210,26 +210,43 @@ rule remove_lineage:
         "logs/remove_lineage/{dataset}.log".format(dataset=dataset)
     shell:
         '''
-        /opt/bio/mothur/mothur "#remove.lineage(fasta={input.fasta}, count={input.count}, taxonomy={input.tax}, taxon={config[taxon]})"
-	#touch "stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta"
+        mothur "#remove.lineage(fasta={input.fasta}, count={input.count}, taxonomy={input.tax}, taxon={config[taxon]})"
         '''
 
-# Preparing for analysis (traditional method)
-rule prepare_analysis:
+rule remove_groups:
     input:
-        count = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.count_table".format(dataset=dataset),
-        fasta = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta".format(dataset=dataset),
-        taxonomy = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy".format(dataset=dataset),
+        fasta="{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta".format(dataset=dataset),
+        count="{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.count_table".format(dataset=dataset),
+        taxonomy="{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy".format(dataset=dataset),
     output:
-        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.taxonomy".format(dataset=dataset),
         "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.pick.count_table".format(dataset=dataset),
+	"{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.taxonomy".format(dataset=dataset),
     shell:
         '''
-        mothur "#remove.groups(count={input.count}, fasta={input.fasta}, taxonomy={input.taxonomy}, groups={config[group]});
-                dist.seqs(fasta=current, cutoff={config[dist_cutoff]});
-                cluster(column=current, count=current);
-                make.shared(list=current, count=current, label=0.03);
-                classify.otu(list=current, count=current, taxonomy=current, label=0.03);"
+        mothur "#remove.groups(count={input.count}, fasta={input.fasta}, taxonomy={input.taxonomy}, groups={config[group]});"
+        '''
+
+rule phylotype:
+    input:
+        taxonomy = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.taxonomy".format(dataset=dataset)
+    output:
+        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.tx.list".format(dataset=dataset)
+    shell:
+        '''
+        mothur "#phylotype(taxonomy={input.taxonomy})"
+        '''
+
+rule classify_phylotypes:
+    input:
+        list = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.tx.list".format(dataset=dataset),
+        count = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.count_table".format(dataset=dataset),
+        taxonomy = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.taxonomy".format(dataset=dataset),
+    output:
+        'idk'     
+    shell:
+        '''
+        mothur "#make.shared(list={input.list}, count={input.count}, label=0.03);
+               classify.otu(list={input.list}, count={input.count}, taxonomy={input.taxonomy}, label=0.03);"
         '''
 
 # Analysis
@@ -237,11 +254,11 @@ rule analysis:
     input:
         taxonomy = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.taxonomy".format(dataset=dataset),
         count = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.pick.count_table".format(dataset=dataset),
+        list = "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.tx.list".format(dataset=dataset)
     output:
-        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.tx.1.cons.taxonomy".format(dataset=dataset),
+        "{dataset}.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.cons.taxonomy".format(dataset=dataset),
     shell:
         '''
-        mothur "#phylotype(taxonomy={input.taxonomy});
-                make.shared(list=current, count={input.count}, label=1);
-                classify.otu(list=current, count={input.count}, taxonomy={input.taxonomy}, label=1);"
+        mothur "#make.shared(list={input.list}, count={input.count}, label=1);
+                classify.otu(list={input.list}, count={input.count}, taxonomy={input.taxonomy}, label=1);"
         '''

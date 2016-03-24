@@ -1,60 +1,67 @@
 rule make_contigs:
 	input: stability.files
 	output: stability.trim.contigs.fasta, stability.contigs.groups
+	reason: Forced execution
 
         mothur "#make.contigs(file=stability.files, processors=1)"
         
 rule screen:
 	input: stability.contigs.groups, stability.trim.contigs.fasta
 	output: stability.trim.contigs.good.fasta, stability.contigs.good.groups
+	reason: Forced execution
 
         mothur "#screen.seqs(fasta=stability.trim.contigs.fasta, group=stability.contigs.groups, maxambig=0, maxlength=275)";
         
 rule unique:
 	input: stability.trim.contigs.good.fasta
 	output: stability.trim.contigs.good.names, stability.trim.contigs.good.unique.fasta
+	reason: Forced execution
 
         mothur "#unique.seqs(fasta=stability.trim.contigs.good.fasta)"
         
 rule pcr:
-	input: silva.bacteria.fasta
-	output: silva.bacteria.pcr.fasta
+	input: silva.bacteria/silva.bacteria.fasta
+	output: silva.bacteria/silva.bacteria.pcr.fasta
+	reason: Forced execution
 
-        mothur "#pcr.seqs(fasta=silva.bacteria.fasta,start=11894, end=25319, keepdots=F, processors=1)"
-        
-rule align:
-	input: stability.trim.contigs.good.unique.fasta, silva.bacteria.pcr.fasta
-	output: stability.trim.contigs.good.unique.align
-
-        mothur "#align.seqs(fasta=stability.trim.contigs.good.unique.fasta,reference=silva.bacteria.pcr.fasta)"
+        mothur "#pcr.seqs(fasta=silva.bacteria/silva.bacteria.fasta,start=11894, end=25319, keepdots=F, processors=1)"
         
 rule count:
 	input: stability.trim.contigs.good.names, stability.contigs.good.groups
 	output: stability.trim.contigs.good.count_table
+	reason: Forced execution
 
         mothur "#count.seqs(name=stability.trim.contigs.good.names, group=stability.contigs.good.groups)"
         
+rule align:
+	input: stability.trim.contigs.good.unique.fasta, silva.bacteria/silva.bacteria.pcr.fasta
+	output: stability.trim.contigs.good.unique.align
+	reason: Forced execution
+
+        mothur "#align.seqs(fasta=stability.trim.contigs.good.unique.fasta,reference=silva.bacteria/silva.bacteria.pcr.fasta)"
+        
 rule summary:
 	input: stability.trim.contigs.good.count_table, stability.trim.contigs.good.unique.align
-	output: stability.summary.txt, stability.trim.contigs.good.unique.summary
+	output: stability.trim.contigs.good.unique.summary, stability.summary.txt
+	reason: Forced execution
 
         mothur "#summary.seqs(fasta=stability.trim.contigs.good.unique.align, count=stability.trim.contigs.good.count_table)" 1> stability.summary.txt
         
 rule screen2:
-	input: stability.trim.contigs.good.count_table, stability.trim.contigs.good.unique.summary, stability.trim.contigs.good.unique.align
+	input: stability.trim.contigs.good.unique.summary, stability.trim.contigs.good.count_table, stability.trim.contigs.good.unique.align
 	output: stability.trim.contigs.good.unique.good.align, stability.trim.contigs.good.good.count_table
-
-        mothur "#screen.seqs(fasta=stability.trim.contigs.good.unique.align,count=stability.trim.contigs.good.count_table,summary=stability.trim.contigs.good.unique.summary,start=1968,end=11550,maxhomop=8)"
-        
+	reason: Forced execution
 rule filter:
 	input: stability.trim.contigs.good.unique.good.align
 	output: stability.trim.contigs.good.unique.good.filter.fasta
+	reason: Forced execution
 
         mothur "#filter.seqs(fasta=stability.trim.contigs.good.unique.good.align, vertical=T, trump=.)"
         
 rule unique2:
 	input: stability.trim.contigs.good.good.count_table, stability.trim.contigs.good.unique.good.filter.fasta
 	output: stability.trim.contigs.good.unique.good.filter.count_table, stability.trim.contigs.good.unique.good.filter.unique.fasta
+	reason: Forced execution
 
         mothur "#unique.seqs(fasta=stability.trim.contigs.good.unique.good.filter.fasta, count=stability.trim.contigs.good.good.count_table)"
         
@@ -62,52 +69,83 @@ rule pre_cluster:
 	input: stability.trim.contigs.good.unique.good.filter.count_table, stability.trim.contigs.good.unique.good.filter.unique.fasta
 	output: stability.trim.contigs.good.unique.good.filter.unique.precluster.fasta, stability.trim.contigs.good.unique.good.filter.unique.precluster.count_table
 	log: logs/precluster/stability.log
+	reason: Forced execution
 
         mothur "#pre.cluster(fasta=stability.trim.contigs.good.unique.good.filter.unique.fasta, count=stability.trim.contigs.good.unique.good.filter.count_table, diffs=2)"
         
 rule chimera_uchime:
 	input: stability.trim.contigs.good.unique.good.filter.unique.precluster.count_table, stability.trim.contigs.good.unique.good.filter.unique.precluster.fasta
-	output: stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.accnos, stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.count_table
+	output: stability.trim.contigs.good.unique.good.filter.unique.precluster.uchime.accnos, stability.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table
+	reason: Forced execution
 
         mothur "#chimera.uchime(fasta=stability.trim.contigs.good.unique.good.filter.unique.precluster.fasta, count=stability.trim.contigs.good.unique.good.filter.unique.precluster.count_table, dereplicate=t)"
         
 rule remove:
-	input: stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.accnos, stability.trim.contigs.good.unique.good.filter.unique.precluster.fasta
+	input: stability.trim.contigs.good.unique.good.filter.unique.precluster.fasta, stability.trim.contigs.good.unique.good.filter.unique.precluster.uchime.accnos
 	output: stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta
+	reason: Forced execution
 
-        mothur "#remove.seqs(fasta=stability.trim.contigs.good.unique.good.filter.unique.precluster.fasta, accnos=stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.accnos)"
+        mothur "#remove.seqs(fasta=stability.trim.contigs.good.unique.good.filter.unique.precluster.fasta, accnos=stability.trim.contigs.good.unique.good.filter.unique.precluster.uchime.accnos)"
         
 rule classify:
-	input: stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.count_table, trainset9_032012.pds.tax, stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, trainset9_032012.pds.fasta
+	input: trainset9_032012.pds.tax, stability.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table, trainset9_032012.pds.fasta, stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta
 	output: stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.taxonomy
+	reason: Forced execution
 
-        mothur "#classify.seqs(fasta=stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.count_table, reference=trainset9_032012.pds.fasta, taxonomy=trainset9_032012.pds.tax, cutoff=80)"
+        mothur "#classify.seqs(fasta=stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=stability.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table, reference=trainset9_032012.pds.fasta, taxonomy=trainset9_032012.pds.tax, cutoff=80)"
         
 rule remove_lineage:
-	input: stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.count_table, stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.taxonomy, stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta
-	output: stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta
+	input: stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.taxonomy, stability.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table, stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta
+	output: stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy, stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta, stability.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.count_table
 	log: logs/remove_lineage/stability.log
+	reason: Forced execution
 
-        mothur "#remove.lineage(fasta=stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.count_table, taxonomy=stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.taxonomy, taxon=Chloroplast-Mitochondria-unknown-Archaea-Eukaryota)" > logs/remove_lineage/stability.log
+        mothur "#remove.lineage(fasta=stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=stability.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table, taxonomy=stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.taxonomy, taxon=Chloroplast-Mitochondria-unknown-Archaea-Eukaryota)"
+        
+rule remove_groups:
+	input: stability.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.count_table, stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta, stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy
+	output: stability.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.pick.count_table, stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.taxonomy
+	reason: Forced execution
+
+        mothur "#remove.groups(count=stability.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.count_table, fasta=stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta, taxonomy=stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.taxonomy, groups=Mock);"
+        
+rule phylotype:
+	input: stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.taxonomy
+	output: stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.tx.list
+	reason: Forced execution
+
+        mothur "#phylotype(taxonomy=stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.taxonomy)"
+        
+rule analysis:
+	input: stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.tx.list, stability.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.pick.count_table, stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.taxonomy
+	output: stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.cons.taxonomy
+	reason: Forced execution
+
+        mothur "#make.shared(list=stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.tx.list, count=stability.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.pick.count_table, label=1);
+                classify.otu(list=stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.tx.list, count=stability.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.pick.count_table, taxonomy=stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.taxonomy, label=1);"
         
 localrule all:
-	input: stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta
+	input: stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.cons.taxonomy
+	reason: Forced execution
 Job counts:
 	count	jobs
 	1	align
 	1	all
+	1	analysis
 	1	chimera_uchime
 	1	classify
 	1	count
 	1	filter
 	1	make_contigs
 	1	pcr
+	1	phylotype
 	1	pre_cluster
 	1	remove
+	1	remove_groups
 	1	remove_lineage
 	1	screen
 	1	screen2
 	1	summary
 	1	unique
 	1	unique2
-	16
+	19
