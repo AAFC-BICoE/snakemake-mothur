@@ -3,6 +3,10 @@
 Example of a snakemake workflow implementation of the mothur MiSeq SOP.
 Please see http://www.mothur.org/wiki/MiSeq_SOP
 
+This workflow has some errors in the last several commands. I ran into an issue with remove.groups() where it claimed to create a file that was never made. Unfortunately I did not have time to correct these problems.  
+Everything up to remove.groups was tested and ran correctly on the AAFC biocluster with both DRMAA and qsub.
+
+
 ## Table of Contents
   * [Workflow](#workflow)
   * [Requirements](#reqs)
