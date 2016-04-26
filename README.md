@@ -34,7 +34,7 @@ I used Python 3.5.1 and Snakemake 3.6.0
 Install Python and snakemake with sudo priviledges
 ```
 > sudo apt-get install python3
-> sudo apt-get install python3-pip  # make be installed with Python for newer version
+> sudo apt-get install python3-pip  # may be installed with Python 3.4+
 > pip3 install snakemake
 ```
 
